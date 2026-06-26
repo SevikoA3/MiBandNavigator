@@ -10,6 +10,7 @@
 [![Release](https://img.shields.io/badge/Release-v1.0.0-success?style=flat)](https://github.com/satvikpandurangi/MiBandNavigator/releases/tag/v1.0.0)
 [![Kotlin](https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=flat&logo=kotlin&logoColor=white)](https://github.com/satvikpandurangi/MiBandNavigator)
 [![Stars](https://img.shields.io/github/stars/satvikpandurangi/MiBandNavigator?style=flat)](https://github.com/satvikpandurangi/MiBandNavigator/stargazers)
+[![Open Source](https://img.shields.io/badge/Open%20Source-100%25-blue?style=flat)](https://github.com/satvikpandurangi/MiBandNavigator)
 
 </div>
 
