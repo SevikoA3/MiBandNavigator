@@ -3,7 +3,10 @@ package com.satvik.mibandnavigator
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import androidx.core.app.NotificationCompat
+import kotlin.math.roundToInt
 
 class NotificationHelper(private val context: Context) {
 
@@ -28,86 +31,12 @@ class NotificationHelper(private val context: Context) {
 
     fun sendToBand(navData: NavData) {
         val isCompact = sharedPrefs.getBoolean("compact_mode", false)
-
-        val text = if (isCompact) {
-            val smallArrow = when (navData.direction) {
-                NavDirection.LEFT -> "⬅️"
-                NavDirection.RIGHT -> "➡️"
-                NavDirection.STRAIGHT -> "⬆️"
-                NavDirection.UTURN -> "↩️"
-                NavDirection.SLIGHT_LEFT -> "↖️"
-                NavDirection.SLIGHT_RIGHT -> "↗️"
-                NavDirection.ROUNDABOUT -> "🔄"
-                else -> "⏺"
-            }
-            // Compact mode text
-            val bottomLine = if (navData.eta.isNotEmpty()) "${navData.eta} • ${navData.totalDistance}" else navData.totalDistance
-            "$smallArrow ${navData.distance}\n${navData.roadName}\n$bottomLine"
-        } else {
-            // --- THE FULL 5-LINE GRID WITH TAILS ---
-            val arrowArt = when (navData.direction) {
-                NavDirection.STRAIGHT ->
-                    "    •    \n" +
-                            "   • •   \n" +
-                            "  •   •  \n" +
-                            "    •    \n" +
-                            "    •    "
-                NavDirection.LEFT ->
-                    "      •  \n" +
-                            "    •    \n" +
-                            "  • • • •\n" +
-                            "    •    \n" +
-                            "      •  "
-                NavDirection.RIGHT ->
-                    "  •      \n" +
-                            "    •    \n" +
-                            "• • • •  \n" +
-                            "    •    \n" +
-                            "  •      "
-                NavDirection.UTURN ->
-                    "   •••   \n" +
-                            "  •   •  \n" +
-                            "  •  ••  \n" +
-                            "  • •    \n" +
-                            "  •      "
-                NavDirection.SLIGHT_LEFT ->
-                    "   ••    \n" +
-                            "  •  •   \n" +
-                            "      •  \n" +
-                            "      •  \n" +
-                            "         "
-                NavDirection.SLIGHT_RIGHT ->
-                    "    ••   \n" +
-                            "   •  •  \n" +
-                            "  •      \n" +
-                            "  •      \n" +
-                            "         "
-                NavDirection.ROUNDABOUT ->
-                    "   •••   \n" +
-                            "  •   •  \n" +
-                            "    ••   \n" +
-                            "  ••     \n" +
-                            " •       "
-                else ->
-                    "    •    \n" +
-                            "   • •   \n" +
-                            "  •   •  \n" +
-                            "    •    \n" +
-                            "    •    "
-            }
-
-            // --- THE TEXT COMPRESSION FIX ---
-            // We combine the ETA with the distance at the top (e.g., "150 m • 10 min")
-            // We combine the Total Distance with the road name at the bottom (e.g., "Test Road • 4.5 km")
-            // This saves a full line of vertical space, allowing the tail to stay!
-            val topText = if (navData.eta.isNotEmpty()) "${navData.distance}  •  ${navData.eta}" else navData.distance
-            val bottomText = if (navData.totalDistance.isNotEmpty()) "${navData.roadName}    ${navData.totalDistance}" else navData.roadName
-
-            "$topText\n$arrowArt\n$bottomText"
-        }
+        val text = formatBandText(navData, isCompact)
+        val icon = navigationIcon(navData.direction)
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_map)
+            .setSmallIcon(icon)
+            .setLargeIcon(createLargeIcon(context, icon))
             .setContentTitle(" ")
             .setContentText(text)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -120,5 +49,47 @@ class NotificationHelper(private val context: Context) {
 
     fun clear() {
         notificationManager.cancel(NOTIFICATION_ID)
+    }
+}
+
+private fun createLargeIcon(context: Context, icon: Int): Bitmap {
+    val size = (48 * context.resources.displayMetrics.density).roundToInt()
+    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val drawable = checkNotNull(context.getDrawable(icon))
+    drawable.setBounds(0, 0, size, size)
+    drawable.draw(Canvas(bitmap))
+    return bitmap
+}
+
+internal fun navigationIcon(direction: NavDirection): Int = when (direction) {
+    NavDirection.LEFT -> R.drawable.ic_nav_left
+    NavDirection.RIGHT -> R.drawable.ic_nav_right
+    NavDirection.STRAIGHT -> R.drawable.ic_nav_straight
+    NavDirection.UTURN -> R.drawable.ic_nav_uturn
+    NavDirection.SLIGHT_LEFT -> R.drawable.ic_nav_slight_left
+    NavDirection.SLIGHT_RIGHT -> R.drawable.ic_nav_slight_right
+    NavDirection.ROUNDABOUT -> R.drawable.ic_nav_roundabout
+    NavDirection.UNKNOWN -> R.drawable.ic_nav_straight
+}
+
+internal fun formatBandText(navData: NavData, isCompact: Boolean): String {
+    val instruction = when (navData.direction) {
+        NavDirection.LEFT -> "<-- LEFT"
+        NavDirection.RIGHT -> "RIGHT -->"
+        NavDirection.STRAIGHT -> "^ STRAIGHT"
+        NavDirection.UTURN -> "U-TURN"
+        NavDirection.SLIGHT_LEFT -> "/< SLIGHT LEFT"
+        NavDirection.SLIGHT_RIGHT -> ">\\ SLIGHT RIGHT"
+        NavDirection.ROUNDABOUT -> "(O) ROUNDABOUT"
+        NavDirection.UNKNOWN -> "CONTINUE"
+    }
+
+    return if (isCompact) {
+        val bottomLine = if (navData.eta.isNotEmpty()) "${navData.eta} • ${navData.totalDistance}" else navData.totalDistance
+        "${navData.distance}\n$instruction\n$bottomLine"
+    } else {
+        val topText = if (navData.eta.isNotEmpty()) "${navData.distance}  •  ${navData.eta}" else navData.distance
+        val bottomText = if (navData.totalDistance.isNotEmpty()) "${navData.roadName}    ${navData.totalDistance}" else navData.roadName
+        "$topText\n$instruction\n$bottomText"
     }
 }
