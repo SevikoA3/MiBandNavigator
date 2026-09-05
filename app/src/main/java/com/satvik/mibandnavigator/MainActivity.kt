@@ -389,7 +389,7 @@ fun SettingsScreen() {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Compact Mode", fontWeight = FontWeight.Bold, color = TextActive)
-                        Text("Use small emojis instead of dot-matrix", fontSize = 12.sp, color = TextGray)
+                        Text("Use shorter 3-line notification layout", fontSize = 12.sp, color = TextGray)
                     }
                     Switch(checked = compactEnabled, onCheckedChange = { compactEnabled = it; saveBool("compact_mode", it) })
                 }
@@ -414,14 +414,14 @@ fun SettingsScreen() {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Text("NOTIFICATION PREVIEW", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextGray, letterSpacing = 1.sp, modifier = Modifier.padding(bottom = 12.dp))
+        Text("BAND PREVIEW", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextGray, letterSpacing = 1.sp, modifier = Modifier.padding(bottom = 12.dp))
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = SlateCard)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("MI BAND DISPLAY (Simulated)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CyanAccent.copy(alpha = 0.6f), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                 Spacer(modifier = Modifier.height(16.dp))
                 WatchDisplaySimulator(compactMode = compactEnabled)
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Forwarded via Zepp Life → Mi Band", fontSize = 11.sp, color = TextGray, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text("Forwarded via Mi Fitness", fontSize = 11.sp, color = TextGray, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             }
         }
 
@@ -436,35 +436,21 @@ fun WatchDisplaySimulator(compactMode: Boolean) {
     Box(modifier = Modifier.fillMaxWidth().background(Color.Black, shape = RoundedCornerShape(16.dp)).padding(20.dp), contentAlignment = Alignment.Center) {
         if (compactMode) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("⬆️ 150m", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text("← TURN LEFT 150 m", color = CyanAccent, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text("Test Road", color = TextGray, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("10 min • 4.5 km", color = TextGray, fontSize = 12.sp)
+                Text("10 min | 4.5 km", color = TextGray, fontSize = 12.sp)
             }
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                // Combined Top Text
-                Text("150 m  •  10 min", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Full 5-line arrow with tail
-                Text(
-                    "    •    \n" +
-                            "   • •   \n" +
-                            "  •   •  \n" +
-                            "    •    \n" +
-                            "    •    ",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 22.sp,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-                // Combined Bottom Text
-                Text("Test Road  •  4.5 km", color = TextGray, fontSize = 14.sp)
+                Text("150 m", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
+                Spacer(modifier = Modifier.height(2.dp))
+                Text("← TURN LEFT", color = CyanAccent, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+                Spacer(modifier = Modifier.height(6.dp))
+                Text("Test Road", color = TextActive, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text("10 min | 4.5 km", color = TextGray, fontSize = 12.sp)
             }
         }
     }

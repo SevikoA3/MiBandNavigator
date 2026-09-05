@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.app.Notification
 import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
@@ -24,10 +25,18 @@ class NavigationService : NotificationListenerService() {
             val dirName = intent?.getStringExtra("test_dir") ?: return
             try {
                 val testDirection = NavDirection.valueOf(dirName)
-                val testData = NavData("150 m", "Test Road", testDirection, "10 min", "4.5 km")
+                val testData = NavData(
+                    distance = "150 m",
+                    roadName = "Test Road",
+                    direction = testDirection,
+                    eta = "10 min",
+                    totalDistance = "4.5 km",
+                    roundaboutExit = if (testDirection == NavDirection.ROUNDABOUT) 2 else null
+                )
 
                 // Reset state to force the test notification through
                 lastDirection = NavDirection.UNKNOWN
+                notifier.clear()
                 notifier.sendToBand(testData)
             } catch (e: Exception) {
                 Log.e(TAG, "Error parsing test direction", e)
@@ -59,8 +68,15 @@ class NavigationService : NotificationListenerService() {
         val text = extras.getCharSequence("android.text")?.toString() ?: ""
         val subText = extras.getCharSequence("android.subText")?.toString() ?: ""
         val textLines = extras.getCharSequenceArray("android.textLines")?.map { it.toString() }?.toTypedArray()
+        val titleBig = extras.getCharSequence(Notification.EXTRA_TITLE_BIG)?.toString() ?: ""
+        val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
+        val summaryText = extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT)?.toString() ?: ""
+        val infoText = extras.getCharSequence(Notification.EXTRA_INFO_TEXT)?.toString() ?: ""
+        val tickerText = sbn.notification.tickerText?.toString() ?: ""
 
-        val cleanData = parser.parseMapsData(title, text, subText, textLines)
+        val cleanData = parser.parseMapsData(
+            title, text, subText, textLines, titleBig, bigText, summaryText, infoText, tickerText
+        )
 
         // ==========================================
         // VIBRATION FIX: THE "THROTTLE"
